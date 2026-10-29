@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>快餐圍城：5歲開始的食物荒漠人生模擬</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- 頂部概況與生命條 -->
+    <header class="glass-panel main-header">
+      <div class="brand-row">
+        <div class="title-wrap">
+          <h1>🍔 快餐圍城：健康與命運模擬器</h1>
+          <p>由 5 歲童年起步，喺美國真實食物荒漠（Food Desert）中作出飲食與生存決策！</p>
+        </div>
+        <div class="header-tools">
+          <button class="btn-ui btn-advance-year" onclick="advanceAge()">⏩ 進入下一年 (成長/結算)</button>
+        </div>
+      </div>
+
+      <!-- 人生年齡進度條 -->
+      <div class="life-bar-wrap">
+        <div class="life-bar-meta">
+          <span id="life-stage-name">童年期 (5 歲)</span>
+          <span>預期壽命目標: 75 歲</span>
+        </div>
+        <div class="life-progress-track">
+          <div class="life-progress-fill" id="life-progress-bar"></div>
+        </div>
+      </div>
+
+      <!-- 核心生理與財務指標 Grid -->
+      <div class="stat-badges-grid">
+        <div class="stat-badge">
+          <span class="stat-label">🎂 年齡階段</span>
+          <div class="stat-val"><span id="txt-age">5</span> <small>歲</small></div>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-label">💵 可支配儲蓄</span>
+          <div class="stat-val" style="color: #34d399;"><span id="txt-budget">$25.00</span></div>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-label">❤️ 生命機能值</span>
+          <div class="stat-val"><span id="txt-health">100</span> <small>/ 100</small></div>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-label">⚖️ 體重 / BMI</span>
+          <div class="stat-val"><span id="txt-weight">18.2</span> <small>kg</small></div>
+          <span style="font-size: 0.7rem; color: #94a3b8;" id="txt-bmi">BMI 15.0 (正常)</span>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-label">🏥 醫療保險</span>
+          <div class="stat-val" style="font-size: 0.92rem;" id="txt-insurance">無保險 ⚠️</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 雙欄操作介面 -->
+    <main class="main-layout">
+      <!-- 左欄：動態街區地圖與操作鍵盤 -->
+      <section class="glass-panel">
+        <div class="section-head">
+          <h2>🗺️ 當前街區地圖</h2>
+          <span class="badge-pill" id="lbl-current-loc">位置: 街道中</span>
+        </div>
+
+        <div class="map-surface">
+          <div class="grid-board" id="grid-board">
+            <!-- 8x8 格子地圖動態注入 -->
+          </div>
+        </div>
+
+        <div class="map-actions">
+          <div class="keypad-controller">
+            <button class="key-btn" onclick="movePlayer(0, -1)" aria-label="上">▲</button>
+            <div class="keypad-row">
+              <button class="key-btn" onclick="movePlayer(-1, 0)" aria-label="左">◀</button>
+              <button class="key-btn action-center" onclick="inspectCurrentTile()">進入</button>
+              <button class="key-btn" onclick="movePlayer(1, 0)" aria-label="右">▶</button>
+            </div>
+            <button class="key-btn" onclick="movePlayer(0, 1)" aria-label="下">▼</button>
+          </div>
+          <div class="map-legend" id="map-legend">
+            <!-- 動態圖例 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 右欄：目的地選擇、地點選項、年度生活決策與慢性病風險 -->
+      <section class="dashboard-stack">
+        <!-- 目的地快捷導航 -->
+        <div class="glass-panel">
+          <div class="section-head">
+            <h3>🎯 探索地點 (隨年齡解鎖)</h3>
+          </div>
+          <div class="destinations-flex" id="destinations-container">
+            <!-- 動態地點按鈕 -->
+          </div>
+        </div>
+
+        <!-- 地點貨架與互動面板 -->
+        <div class="glass-panel" id="panel-shop">
+          <div class="section-head">
+            <h3 id="shop-name">🏪 到訪地點選項</h3>
+            <span class="badge-pill" id="shop-badge">未抵達</span>
+          </div>
+          <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;" id="shop-narrative">
+            每年街區設施與食品供應都會變動。點擊目的地或用方向鍵前往有圖示的格子。
+          </p>
+          <div class="food-shelf" id="shelf-container">
+            <div class="empty-shelf-tip">🚶 行去地圖上有圖示嘅建築物揀選食物或服務</div>
+          </div>
+        </div>
+
+        <!-- 年度真實生活行動 (非飲食決策) -->
+        <div class="glass-panel">
+          <div class="section-head">
+            <h3>💼 年度生活決策 (額外行動)</h3>
+          </div>
+          <div class="annual-actions-bar">
+            <button class="action-card-btn" onclick="doAnnualAction('work_extra')">
+              <strong>🔨 超時兼職</strong>
+              <span>賺取額外收入，但輕微消耗精力</span>
+            </button>
+            <button class="action-card-btn" onclick="doAnnualAction('exercise')">
+              <strong>🏃 社區運動</strong>
+              <span>減低動脈硬化與糖尿病風險</span>
+            </button>
+            <button class="action-card-btn" onclick="doAnnualAction('snap_apply')">
+              <strong>📦 申領食物援助</strong>
+              <span>領取 SNAP 食物券（需資產審查）</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 慢性病長期累積指標 -->
+        <div class="glass-panel">
+          <div class="section-head">
+            <h3>📊 終身慢性病累積風險</h3>
+          </div>
+          <div class="gauge-list">
+            <div class="gauge-row">
+              <div class="gauge-meta">
+                <span>🩸 二型糖尿病風險 (T2D)</span>
+                <strong id="val-t2d">3%</strong>
+              </div>
+              <div class="gauge-track">
+                <div class="gauge-fill fill-t2d" id="gauge-t2d" style="width: 3%;"></div>
+              </div>
+            </div>
+            <div class="gauge-row">
+              <div class="gauge-meta">
+                <span>❤️ 心血管與動脈硬化 (CVD)</span>
+                <strong id="val-cvd">2%</strong>
+              </div>
+              <div class="gauge-track">
+                <div class="gauge-fill fill-cvd" id="gauge-cvd" style="width: 2%;"></div>
+              </div>
+            </div>
+            <div class="gauge-row">
+              <div class="gauge-meta">
+                <span>🥩 今年優質蛋白攝取 (<span id="val-cur-pro">0</span> / <span id="val-target-pro">30</span>g)</span>
+                <strong id="val-pro-pct">0%</strong>
+              </div>
+              <div class="gauge-track">
+                <div class="gauge-fill fill-nutri" id="gauge-pro" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 美國醫療保險方案決策 -->
+        <div class="glass-panel">
+          <div class="section-head">
+            <h3>🛡️ 美國醫療保險方案</h3>
+          </div>
+          <div class="ins-grid">
+            <button class="ins-card-btn" id="btn-plan-none" onclick="selectInsurancePlan('none')">
+              <span class="ins-title">❌ 無保險</span>
+              <span class="ins-detail">每年 $0 | 帳單自負 100%</span>
+            </button>
+            <button class="ins-card-btn" id="btn-plan-private" onclick="selectInsurancePlan('private')">
+              <span class="ins-title">🏥 商業醫保</span>
+              <span class="ins-detail">每年 $1,200 | 報銷 85%</span>
+            </button>
+            <button class="ins-card-btn" id="btn-plan-medicaid" onclick="selectInsurancePlan('medicaid')">
+              <span class="ins-title">🏛️ Medicaid</span>
+              <span class="ins-detail">每年 $150 | 資產需 &lt; $2,000</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 終身日誌 Console -->
+    <footer class="glass-panel log-panel-wrap">
+      <div class="section-head">
+        <h3>📜 人生動態與突發事件紀錄</h3>
+      </div>
+      <div class="terminal-console" id="terminal-console">
+        <div class="log-line system">[5 歲] 模擬開始。你出生於美國低收入食物沙漠社區。屋企三餐受預算限制，街角快餐與便利店包圍著你的童年生活。</div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 學術研究 Modal -->
+  <div class="modal-overlay-layer hidden" id="modal-science">
+    <div class="modal-box science-modal-inner">
+      <div class="modal-icon-badge" id="m-icon">🔬</div>
+      <h3 id="m-title">醫學與公共衛生同行評審文獻</h3>
+      <p class="modal-desc" id="m-desc"></p>
+      <div class="paper-box">
+        <div class="paper-title" id="m-source">📖 文獻來源</div>
+        <p class="paper-body" id="m-body"></p>
+      </div>
+      <button class="btn-ui btn-primary-action btn-full" onclick="closeScienceModal()">了解並返回生活</button>
+    </div>
+  </div>
+
+  <!-- 人生結算 Modal -->
+  <div class="modal-overlay-layer hidden" id="modal-gameover">
+    <div class="modal-box gameover-inner">
+      <h2 id="go-title">人生結局報告</h2>
+      <div id="go-content" style="margin-bottom: 18px;"></div>
+      <button class="btn-ui btn-primary-action btn-full" onclick="restartSimulation()">以 5 歲重新開展新人世</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
